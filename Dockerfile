@@ -8,4 +8,4 @@ RUN cd build && CGO_ENABLED=0 go build
 
 FROM golang:1.17.8-buster
 COPY --from=build /otel/build .
-ENTRYPOINT ["./nt-otelcol"]
+ENTRYPOINT ["./nt-otelcol", "--config=/conf/otelcol.yaml"]
