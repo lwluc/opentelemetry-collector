@@ -4,6 +4,8 @@ exporters:
     gomod: go.opentelemetry.io/collector v0.46.0
   - import: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/jaegerexporter
     gomod: go.opentelemetry.io/collector v0.46.0
+  - import: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/elasticsearchexporter
+    gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/elasticsearchexporter v0.46.0
 
 receivers:
   - import: go.opentelemetry.io/collector/receiver/otlpreceiver
