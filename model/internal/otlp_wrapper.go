@@ -14,11 +14,38 @@
 
 package internal // import "go.opentelemetry.io/collector/model/internal"
 
-// Deprecated: [v0.47.0] will be removed soon, only used internally.
-type MetricsWrapper struct{}
+import (
+	otlplogs "go.opentelemetry.io/collector/model/internal/data/protogen/logs/v1"
+	otlpmetrics "go.opentelemetry.io/collector/model/internal/data/protogen/metrics/v1"
+	otlptrace "go.opentelemetry.io/collector/model/internal/data/protogen/trace/v1"
+)
 
-// Deprecated: [v0.47.0] will be removed soon, only used internally.
-type TracesWrapper struct{}
+// MetricsToOtlp internal helper to convert Metrics to protobuf representation.
+func MetricsToOtlp(mw Metrics) *otlpmetrics.MetricsData {
+	return mw.orig
+}
 
-// Deprecated: [v0.47.0] will be removed soon, only used internally.
-type LogsWrapper struct{}
+// MetricsFromOtlp internal helper to convert protobuf representation to Metrics.
+func MetricsFromOtlp(orig *otlpmetrics.MetricsData) Metrics {
+	return Metrics{orig: orig}
+}
+
+// TracesToOtlp internal helper to convert Traces to protobuf representation.
+func TracesToOtlp(mw Traces) *otlptrace.TracesData {
+	return mw.orig
+}
+
+// TracesFromOtlp internal helper to convert protobuf representation to Traces.
+func TracesFromOtlp(orig *otlptrace.TracesData) Traces {
+	return Traces{orig: orig}
+}
+
+// LogsToOtlp internal helper to convert Logs to protobuf representation.
+func LogsToOtlp(l Logs) *otlplogs.LogsData {
+	return l.orig
+}
+
+// LogsFromOtlp internal helper to convert protobuf representation to Logs.
+func LogsFromOtlp(orig *otlplogs.LogsData) Logs {
+	return Logs{orig: orig}
+}

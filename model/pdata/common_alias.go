@@ -17,42 +17,118 @@ package pdata // import "go.opentelemetry.io/collector/model/pdata"
 // This file contains aliases to data structures that are common for all
 // signal types, such as timestamps, attributes, etc.
 
-import "go.opentelemetry.io/collector/model/internal/pdata"
+import "go.opentelemetry.io/collector/model/internal"
 
-// AttributeValueType is an alias for pdata.AttributeValueType type.
-type AttributeValueType = pdata.AttributeValueType
+// ValueType is an alias for internal.ValueType type.
+type ValueType = internal.ValueType
+
+// AttributeValueType is an alias for internal.ValueType type.
+// Deprecated: [v0.48.0] Use ValueType instead.
+type AttributeValueType = internal.ValueType
 
 const (
-	AttributeValueTypeEmpty  = pdata.AttributeValueTypeEmpty
-	AttributeValueTypeString = pdata.AttributeValueTypeString
-	AttributeValueTypeInt    = pdata.AttributeValueTypeInt
-	AttributeValueTypeDouble = pdata.AttributeValueTypeDouble
-	AttributeValueTypeBool   = pdata.AttributeValueTypeBool
-	AttributeValueTypeMap    = pdata.AttributeValueTypeMap
-	AttributeValueTypeArray  = pdata.AttributeValueTypeArray
-	AttributeValueTypeBytes  = pdata.AttributeValueTypeBytes
+	ValueTypeEmpty  = internal.ValueTypeEmpty
+	ValueTypeString = internal.ValueTypeString
+	ValueTypeInt    = internal.ValueTypeInt
+	ValueTypeDouble = internal.ValueTypeDouble
+	ValueTypeBool   = internal.ValueTypeBool
+	ValueTypeMap    = internal.ValueTypeMap
+	ValueTypeSlice  = internal.ValueTypeSlice
+	ValueTypeBytes  = internal.ValueTypeBytes
+
+	// Deprecated: [v0.48.0] Use ValueTypeEmpty instead.
+	AttributeValueTypeEmpty = internal.ValueTypeEmpty
+
+	// Deprecated: [v0.48.0] Use ValueTypeString instead.
+	AttributeValueTypeString = internal.ValueTypeString
+
+	// Deprecated: [v0.48.0] Use ValueTypeInt instead.
+	AttributeValueTypeInt = internal.ValueTypeInt
+
+	// Deprecated: [v0.48.0] Use ValueTypeDouble instead.
+	AttributeValueTypeDouble = internal.ValueTypeDouble
+
+	// Deprecated: [v0.48.0] Use ValueTypeBool instead.
+	AttributeValueTypeBool = internal.ValueTypeBool
+
+	// Deprecated: [v0.48.0] Use ValueTypeMap instead.
+	AttributeValueTypeMap = internal.ValueTypeMap
+
+	// Deprecated: [v0.48.0] Use ValueTypeSlice instead.
+	AttributeValueTypeArray = internal.ValueTypeSlice
+
+	// Deprecated: [v0.48.0] Use ValueTypeBytes instead.
+	AttributeValueTypeBytes = internal.ValueTypeBytes
 )
 
-// AttributeValue is an alias for pdata.AttributeValue struct.
-type AttributeValue = pdata.AttributeValue
+// Value is an alias for internal.Value struct.
+type Value = internal.Value
 
-// Aliases for functions to create pdata.AttributeValue.
+// Deprecated: [v0.48.0] Use Value instead.
+type AttributeValue = internal.Value
+
+// Aliases for functions to create internal.Value.
 var (
-	NewAttributeValueEmpty  = pdata.NewAttributeValueEmpty
-	NewAttributeValueString = pdata.NewAttributeValueString
-	NewAttributeValueInt    = pdata.NewAttributeValueInt
-	NewAttributeValueDouble = pdata.NewAttributeValueDouble
-	NewAttributeValueBool   = pdata.NewAttributeValueBool
-	NewAttributeValueMap    = pdata.NewAttributeValueMap
-	NewAttributeValueArray  = pdata.NewAttributeValueArray
-	NewAttributeValueBytes  = pdata.NewAttributeValueBytes
+	NewValueEmpty  = internal.NewValueEmpty
+	NewValueString = internal.NewValueString
+	NewValueInt    = internal.NewValueInt
+	NewValueDouble = internal.NewValueDouble
+	NewValueBool   = internal.NewValueBool
+	NewValueMap    = internal.NewValueMap
+	NewValueSlice  = internal.NewValueSlice
+	NewValueBytes  = internal.NewValueBytes
+
+	// Deprecated: [v0.48.0] Use NewValueEmpty instead.
+	NewAttributeValueEmpty = internal.NewValueEmpty
+
+	// Deprecated: [v0.48.0] Use NewValueString instead.
+	NewAttributeValueString = internal.NewValueString
+
+	// Deprecated: [v0.48.0] Use NewValueInt instead.
+	NewAttributeValueInt = internal.NewValueInt
+
+	// Deprecated: [v0.48.0] Use NewValueDouble instead.
+	NewAttributeValueDouble = internal.NewValueDouble
+
+	// Deprecated: [v0.48.0] Use NewValueBool instead.
+	NewAttributeValueBool = internal.NewValueBool
+
+	// Deprecated: [v0.48.0] Use NewValueMap instead.
+	NewAttributeValueMap = internal.NewValueMap
+
+	// Deprecated: [v0.48.0] Use NewValueSlice instead.
+	NewAttributeValueArray = internal.NewValueSlice
+
+	// Deprecated: [v0.48.0] Use NewValueBytes instead.
+	NewAttributeValueBytes = internal.NewValueBytes
 )
 
-// AttributeMap is an alias for pdata.AttributeMap struct.
-type AttributeMap = pdata.AttributeMap
+// Map is an alias for internal.Map struct.
+type Map = internal.Map
 
-// Aliases for functions to create pdata.AttributeMap.
+// Deprecated: [v0.48.0] Use Map instead.
+type AttributeMap = internal.Map
+
+// Aliases for functions to create internal.Map.
 var (
-	NewAttributeMap        = pdata.NewAttributeMap
-	NewAttributeMapFromMap = pdata.NewAttributeMapFromMap
+	NewMap        = internal.NewMap
+	NewMapFromRaw = internal.NewMapFromRaw
 )
+
+// Deprecated: [v0.48.0] Use NewMap instead.
+var NewAttributeMap = internal.NewMap
+
+// Deprecated: [v0.48.0] Use NewMapFromRaw instead.
+var NewAttributeMapFromMap = internal.NewAttributeMapFromMap
+
+// Deprecated: [v0.48.0] Use Slice instead.
+type AttributeValueSlice = internal.Slice
+
+// Deprecated: [v0.48.0] Use NewSlice instead.
+var NewAttributeValueSlice = internal.NewSlice
+
+// Deprecated: [v0.48.0] Use InstrumentationScope instead.
+type InstrumentationLibrary = internal.InstrumentationScope
+
+// Deprecated: [v0.48.0] Use NewInstrumentationScope instead.
+var NewInstrumentationLibrary = internal.NewInstrumentationScope

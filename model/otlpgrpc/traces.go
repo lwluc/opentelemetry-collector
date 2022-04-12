@@ -20,9 +20,10 @@ import (
 
 	"google.golang.org/grpc"
 
+	ipdata "go.opentelemetry.io/collector/model/internal"
 	otlpcollectortrace "go.opentelemetry.io/collector/model/internal/data/protogen/collector/trace/v1"
 	otlptrace "go.opentelemetry.io/collector/model/internal/data/protogen/trace/v1"
-	ipdata "go.opentelemetry.io/collector/model/internal/pdata"
+	"go.opentelemetry.io/collector/model/internal/otlp"
 	"go.opentelemetry.io/collector/model/pdata"
 )
 
@@ -36,27 +37,14 @@ func NewTracesResponse() TracesResponse {
 	return TracesResponse{orig: &otlpcollectortrace.ExportTraceServiceResponse{}}
 }
 
-// UnmarshalTracesResponse unmarshalls TracesResponse from proto bytes.
-func UnmarshalTracesResponse(data []byte) (TracesResponse, error) {
-	var orig otlpcollectortrace.ExportTraceServiceResponse
-	if err := orig.Unmarshal(data); err != nil {
-		return TracesResponse{}, err
-	}
-	return TracesResponse{orig: &orig}, nil
-}
-
-// UnmarshalJSONTracesResponse unmarshalls TracesResponse from JSON bytes.
-func UnmarshalJSONTracesResponse(data []byte) (TracesResponse, error) {
-	var orig otlpcollectortrace.ExportTraceServiceResponse
-	if err := jsonUnmarshaler.Unmarshal(bytes.NewReader(data), &orig); err != nil {
-		return TracesResponse{}, err
-	}
-	return TracesResponse{orig: &orig}, nil
-}
-
-// Marshal marshals TracesResponse into proto bytes.
-func (tr TracesResponse) Marshal() ([]byte, error) {
+// MarshalProto marshals TracesResponse into proto bytes.
+func (tr TracesResponse) MarshalProto() ([]byte, error) {
 	return tr.orig.Marshal()
+}
+
+// UnmarshalProto unmarshalls TracesResponse from proto bytes.
+func (tr TracesResponse) UnmarshalProto(data []byte) error {
+	return tr.orig.Unmarshal(data)
 }
 
 // MarshalJSON marshals TracesResponse into JSON bytes.
@@ -66,6 +54,11 @@ func (tr TracesResponse) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshalls TracesResponse from JSON bytes.
+func (tr TracesResponse) UnmarshalJSON(data []byte) error {
+	return jsonUnmarshaler.Unmarshal(bytes.NewReader(data), tr.orig)
 }
 
 // TracesRequest represents the response for gRPC client/server.
@@ -78,27 +71,18 @@ func NewTracesRequest() TracesRequest {
 	return TracesRequest{orig: &otlpcollectortrace.ExportTraceServiceRequest{}}
 }
 
-// UnmarshalTracesRequest unmarshalls TracesRequest from proto bytes.
-func UnmarshalTracesRequest(data []byte) (TracesRequest, error) {
-	var orig otlpcollectortrace.ExportTraceServiceRequest
-	if err := orig.Unmarshal(data); err != nil {
-		return TracesRequest{}, err
-	}
-	return TracesRequest{orig: &orig}, nil
-}
-
-// UnmarshalJSONTracesRequest unmarshalls TracesRequest from JSON bytes.
-func UnmarshalJSONTracesRequest(data []byte) (TracesRequest, error) {
-	var orig otlpcollectortrace.ExportTraceServiceRequest
-	if err := jsonUnmarshaler.Unmarshal(bytes.NewReader(data), &orig); err != nil {
-		return TracesRequest{}, err
-	}
-	return TracesRequest{orig: &orig}, nil
-}
-
-// Marshal marshals TracesRequest into proto bytes.
-func (tr TracesRequest) Marshal() ([]byte, error) {
+// MarshalProto marshals TracesRequest into proto bytes.
+func (tr TracesRequest) MarshalProto() ([]byte, error) {
 	return tr.orig.Marshal()
+}
+
+// UnmarshalProto unmarshalls TracesRequest from proto bytes.
+func (tr TracesRequest) UnmarshalProto(data []byte) error {
+	if err := tr.orig.Unmarshal(data); err != nil {
+		return err
+	}
+	otlp.InstrumentationLibrarySpansToScope(tr.orig.ResourceSpans)
+	return nil
 }
 
 // MarshalJSON marshals TracesRequest into JSON bytes.
@@ -108,6 +92,15 @@ func (tr TracesRequest) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshalls TracesRequest from JSON bytes.
+func (tr TracesRequest) UnmarshalJSON(data []byte) error {
+	if err := jsonUnmarshaler.Unmarshal(bytes.NewReader(data), tr.orig); err != nil {
+		return err
+	}
+	otlp.InstrumentationLibrarySpansToScope(tr.orig.ResourceSpans)
+	return nil
 }
 
 func (tr TracesRequest) SetTraces(td pdata.Traces) {

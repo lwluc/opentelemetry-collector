@@ -28,6 +28,9 @@ import (
 	"go.opentelemetry.io/collector/config/configmapprovider"
 	"go.opentelemetry.io/collector/config/configunmarshaler"
 	"go.opentelemetry.io/collector/config/experimental/configsource"
+	"go.opentelemetry.io/collector/config/mapprovider/envmapprovider"
+	"go.opentelemetry.io/collector/config/mapprovider/filemapprovider"
+	"go.opentelemetry.io/collector/config/mapprovider/yamlmapprovider"
 )
 
 // ConfigProvider provides the service configuration.
@@ -66,24 +69,24 @@ type ConfigProvider interface {
 
 type configProvider struct {
 	locations          []string
-	configMapProviders map[string]configmapprovider.Provider
+	configMapProviders map[string]config.MapProvider
 	cfgMapConverters   []config.MapConverterFunc
 	configUnmarshaler  configunmarshaler.ConfigUnmarshaler
 
 	sync.Mutex
-	closer  configmapprovider.CloseFunc
+	closer  config.CloseFunc
 	watcher chan error
 }
 
 // MustNewConfigProvider returns a new ConfigProvider that provides the configuration:
-// * Retrieve the config.Map by merging all retrieved maps from all the configmapprovider.Provider in order.
+// * Retrieve the config.Map by merging all retrieved maps from all the config.MapProvider in order.
 // * Then applies all the ConfigMapConverterFunc in the given order.
 // * Then unmarshalls the final config.Config using the given configunmarshaler.ConfigUnmarshaler.
 //
 // The `configMapProviders` is a map of pairs <scheme,Provider>.
 func MustNewConfigProvider(
 	locations []string,
-	configMapProviders map[string]configmapprovider.Provider,
+	configMapProviders map[string]config.MapProvider,
 	cfgMapConverters []config.MapConverterFunc,
 	configUnmarshaler configunmarshaler.ConfigUnmarshaler) ConfigProvider {
 	// Safe copy, ensures the slice cannot be changed from the caller.
@@ -103,10 +106,7 @@ func MustNewConfigProvider(
 func MustNewDefaultConfigProvider(configLocations []string, properties []string) ConfigProvider {
 	return MustNewConfigProvider(
 		configLocations,
-		map[string]configmapprovider.Provider{
-			"file": configmapprovider.NewFile(),
-			"env":  configmapprovider.NewEnv(),
-		},
+		makeConfigMapProviderMap(filemapprovider.New(), envmapprovider.New(), yamlmapprovider.New()),
 		[]config.MapConverterFunc{
 			configmapprovider.NewOverwritePropertiesConverter(properties),
 			configmapprovider.NewExpandConverter(),
@@ -149,7 +149,7 @@ func (cm *configProvider) Watch() <-chan error {
 	return cm.watcher
 }
 
-func (cm *configProvider) onChange(event *configmapprovider.ChangeEvent) {
+func (cm *configProvider) onChange(event *config.ChangeEvent) {
 	// TODO: Remove check for configsource.ErrSessionClosed when providers updated to not call onChange when closed.
 	if event.Error != configsource.ErrSessionClosed {
 		cm.watcher <- event.Error
@@ -179,8 +179,8 @@ func (cm *configProvider) Shutdown(ctx context.Context) error {
 // https://tools.ietf.org/id/draft-kerwin-file-scheme-07.html#syntax
 var driverLetterRegexp = regexp.MustCompile("^[A-z]:")
 
-func (cm *configProvider) mergeRetrieve(ctx context.Context) (*configmapprovider.Retrieved, error) {
-	var closers []configmapprovider.CloseFunc
+func (cm *configProvider) mergeRetrieve(ctx context.Context) (*config.Retrieved, error) {
+	var closers []config.CloseFunc
 	retCfgMap := config.NewMap()
 	for _, location := range cm.locations {
 		// For backwards compatibility:
@@ -207,7 +207,7 @@ func (cm *configProvider) mergeRetrieve(ctx context.Context) (*configmapprovider
 			closers = append(closers, retr.CloseFunc)
 		}
 	}
-	return &configmapprovider.Retrieved{
+	return &config.Retrieved{
 		Map: retCfgMap,
 		CloseFunc: func(ctxF context.Context) error {
 			var err error
@@ -217,4 +217,12 @@ func (cm *configProvider) mergeRetrieve(ctx context.Context) (*configmapprovider
 			return err
 		},
 	}, nil
+}
+
+func makeConfigMapProviderMap(providers ...config.MapProvider) map[string]config.MapProvider {
+	ret := make(map[string]config.MapProvider, len(providers))
+	for _, provider := range providers {
+		ret[provider.Scheme()] = provider
+	}
+	return ret
 }

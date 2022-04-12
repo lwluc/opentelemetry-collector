@@ -21,9 +21,10 @@ import (
 	"github.com/gogo/protobuf/jsonpb"
 	"google.golang.org/grpc"
 
+	ipdata "go.opentelemetry.io/collector/model/internal"
 	otlpcollectorlog "go.opentelemetry.io/collector/model/internal/data/protogen/collector/logs/v1"
 	otlplogs "go.opentelemetry.io/collector/model/internal/data/protogen/logs/v1"
-	ipdata "go.opentelemetry.io/collector/model/internal/pdata"
+	"go.opentelemetry.io/collector/model/internal/otlp"
 	"go.opentelemetry.io/collector/model/pdata"
 )
 
@@ -40,27 +41,14 @@ func NewLogsResponse() LogsResponse {
 	return LogsResponse{orig: &otlpcollectorlog.ExportLogsServiceResponse{}}
 }
 
-// UnmarshalLogsResponse unmarshalls LogsResponse from proto bytes.
-func UnmarshalLogsResponse(data []byte) (LogsResponse, error) {
-	var orig otlpcollectorlog.ExportLogsServiceResponse
-	if err := orig.Unmarshal(data); err != nil {
-		return LogsResponse{}, err
-	}
-	return LogsResponse{orig: &orig}, nil
-}
-
-// UnmarshalJSONLogsResponse unmarshalls LogsResponse from JSON bytes.
-func UnmarshalJSONLogsResponse(data []byte) (LogsResponse, error) {
-	var orig otlpcollectorlog.ExportLogsServiceResponse
-	if err := jsonUnmarshaler.Unmarshal(bytes.NewReader(data), &orig); err != nil {
-		return LogsResponse{}, err
-	}
-	return LogsResponse{orig: &orig}, nil
-}
-
-// Marshal marshals LogsResponse into proto bytes.
-func (lr LogsResponse) Marshal() ([]byte, error) {
+// MarshalProto marshals LogsResponse into proto bytes.
+func (lr LogsResponse) MarshalProto() ([]byte, error) {
 	return lr.orig.Marshal()
+}
+
+// UnmarshalProto unmarshalls LogsResponse from proto bytes.
+func (lr LogsResponse) UnmarshalProto(data []byte) error {
+	return lr.orig.Unmarshal(data)
 }
 
 // MarshalJSON marshals LogsResponse into JSON bytes.
@@ -70,6 +58,11 @@ func (lr LogsResponse) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshalls LogsResponse from JSON bytes.
+func (lr LogsResponse) UnmarshalJSON(data []byte) error {
+	return jsonUnmarshaler.Unmarshal(bytes.NewReader(data), lr.orig)
 }
 
 // LogsRequest represents the response for gRPC client/server.
@@ -82,27 +75,18 @@ func NewLogsRequest() LogsRequest {
 	return LogsRequest{orig: &otlpcollectorlog.ExportLogsServiceRequest{}}
 }
 
-// UnmarshalLogsRequest unmarshalls LogsRequest from proto bytes.
-func UnmarshalLogsRequest(data []byte) (LogsRequest, error) {
-	var orig otlpcollectorlog.ExportLogsServiceRequest
-	if err := orig.Unmarshal(data); err != nil {
-		return LogsRequest{}, err
-	}
-	return LogsRequest{orig: &orig}, nil
-}
-
-// UnmarshalJSONLogsRequest unmarshalls LogsRequest from JSON bytes.
-func UnmarshalJSONLogsRequest(data []byte) (LogsRequest, error) {
-	var orig otlpcollectorlog.ExportLogsServiceRequest
-	if err := jsonUnmarshaler.Unmarshal(bytes.NewReader(data), &orig); err != nil {
-		return LogsRequest{}, err
-	}
-	return LogsRequest{orig: &orig}, nil
-}
-
-// Marshal marshals LogsRequest into proto bytes.
-func (lr LogsRequest) Marshal() ([]byte, error) {
+// MarshalProto marshals LogsRequest into proto bytes.
+func (lr LogsRequest) MarshalProto() ([]byte, error) {
 	return lr.orig.Marshal()
+}
+
+// UnmarshalProto unmarshalls LogsRequest from proto bytes.
+func (lr LogsRequest) UnmarshalProto(data []byte) error {
+	if err := lr.orig.Unmarshal(data); err != nil {
+		return err
+	}
+	otlp.InstrumentationLibraryLogsToScope(lr.orig.ResourceLogs)
+	return nil
 }
 
 // MarshalJSON marshals LogsRequest into JSON bytes.
@@ -112,6 +96,15 @@ func (lr LogsRequest) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshalls LogsRequest from JSON bytes.
+func (lr LogsRequest) UnmarshalJSON(data []byte) error {
+	if err := jsonUnmarshaler.Unmarshal(bytes.NewReader(data), lr.orig); err != nil {
+		return err
+	}
+	otlp.InstrumentationLibraryLogsToScope(lr.orig.ResourceLogs)
+	return nil
 }
 
 func (lr LogsRequest) SetLogs(ld pdata.Logs) {
